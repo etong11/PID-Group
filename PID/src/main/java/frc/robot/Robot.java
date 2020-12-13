@@ -22,28 +22,31 @@ public class Robot extends TimedRobot {
   private final double ROBO_SPEED = 1;
   private double fieldPosition = 0;
   private Field2d field = new Field2d();
-  private double kp = 0.1, ki = 0.001, kd = 0.1;
+  private double kp = 3e-2, ki = 1e-6, kd = 2e-1;
+  //private double kp = 0.1, ki = 1e-3, kd = 1e-1;
   private double setpt = 10;
   private double oldVal = 0;
   private double time = 0;
-  private double error=1e-5;
+  private double error=0;
   private double out;
   private double oldErr;
 
   @Override
   public void autonomousPeriodic() {
-    /*if(out > 0)
-    {*/
-      oldVal += fieldPosition*20;
+    if(error > 1 || error == 0)
+    {
+      error = setpt-fieldPosition;
+      out = (kp*error)+((oldVal+error)*ki)+((error-oldErr)*kd);
+      System.out.println("error: "+error+"\nField position: "+fieldPosition+"\nOut: "+out);
+      fieldPosition += (ROBO_SPEED * out);
+      oldErr = error;
+      oldVal += error*20;
+    /*  oldVal += fieldPosition*20;
       time+=20;
       out = setpt-((kp*fieldPosition)+(ki*oldVal)+(kd*(oldErr/20)));
-      /*
-      error = setpt-fieldPosition;
-      out = ((kp*error)+(oldVal+(ki*20*oldVal/time))+(kd*(oldErr-error)/20));*/
-      System.out.println("error: "+error+"\nField position: "+fieldPosition+"\nOut: "+out);
       fieldPosition = (ROBO_SPEED * out);
-      oldErr += out;
-    //}
+      oldErr+=out;*/
+    }
 
   }
 
@@ -52,4 +55,9 @@ public class Robot extends TimedRobot {
     field.setRobotPose(fieldPosition, 0, new Rotation2d(0));
   }
 
+  @Override
+  public void autonomousInit(){
+      fieldPosition=0;
+      error=0;
+  }
 }
